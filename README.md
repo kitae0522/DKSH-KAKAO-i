@@ -55,9 +55,9 @@ $ git clone https://github.com/kitae0522/DKSH-KAKAO-i.git
 # 4. Main Function
 | # | Func Name | what it does | `keyword` | using example | Entity Name |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | 🍚 load today meal 🍚 | recall meal menu information | `오늘` | `오늘 급식 알려줘`, `오늘 급식` ... | `sys_date` |
-| 2 | 📆 load time table 📆 | recall timetable information. | `1학년`, `2학년`, `1반`, `2반`, `월요일` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/time_table_success.jpg) | `sys_date`, `set_grade`, `set_class` |
-| 3 | 🌈 load weather 🌈 | recall regional weather information. | `대치동`, `성동구`, `서울` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg) | `sys_location` |
+| 1 | load today meal | recall meal menu information | `오늘` | `오늘 급식 알려줘`, `오늘 급식` ... | `sys_date` |
+| 2 | load time table | recall timetable information. | `1학년`, `2학년`, `1반`, `2반`, `월요일` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/time_table_success.jpg) | `sys_date`, `set_grade`, `set_class` |
+| 3 | load weather | recall regional weather information. | `대치동`, `성동구`, `서울` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg) | `sys_location` |
 
 # 5. Use Example
 <div align="center">
