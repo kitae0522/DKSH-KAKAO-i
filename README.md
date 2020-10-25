@@ -61,9 +61,9 @@ $ git clone https://github.com/kitae0522/DKSH-KAKAO-i.git
 
 # 5. Use Example
 <div align="center">
-<img src="https://github.com/kitae0522/DKSH-KAKAO-i/sample/meal_success.jpg">
-<img src="https://github.com/kitae0522/DKSH-KAKAO-i/sample/time_table_success.jpg">
-<img src="https://github.com/kitae0522/DKSH-KAKAO-i/sample/weather_success.jpg">
+<img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/meal_success.jpg">
+<img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/time_table_success.jpg">
+<img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg">
 </div>
 
 # 6. Development Environment
