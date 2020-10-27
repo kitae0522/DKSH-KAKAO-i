@@ -1,17 +1,14 @@
 from flask import Flask, request, jsonify
-from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
-import urllib
+import requests
 import json
 from datetime import datetime
+from pytz import timezone
 import pandas as pd
 
 time_table_DB = pd.read_csv('time_table.csv')
 
-ERROR_MESSAGE = {
-    "Error:404": "🤦🏻‍♂️학교 또는 기상청에서 제공하는 데이터 정보가 없습니다. 나중에 다시 시도해주세요.",  # no data
-    "Error:500": "🤦🏻‍♂️답변 처리과정에서 문제가 생겼습니다. 나중에 다시 시도해주세요."  # error answer
-}
+ERROR_MESSAGE = "🤦🏻‍♂️학교 또는 기상청에서 제공하는 데이터 정보가 없습니다. 나중에 다시 시도해주세요."  # no data
 
 quickReplies = [
     {
@@ -23,6 +20,11 @@ quickReplies = [
         "messageText": "오늘 급식 메뉴는 뭐야?",
         "action": "message",
         "label": "오늘 급식 메뉴는 뭐야?"
+    },
+    {
+        "messageText": "내일 급식 메뉴는 뭐야?",
+        "action": "message",
+        "label": "내일 급식 메뉴는 뭐야?"
     },
     {
         "messageText": "시간표 알려줘!",
@@ -70,11 +72,11 @@ def time_table():
 
     try:
         index = 25*(int(set_grade)-1) + (int(set_class)-1)*5 + tmp - 1
-        _time_table = list(time_table_DB['time'].iloc[index].split(" "))
-        _res_time_table = [f"{key+1}교시:{value}" for key,
+        _time_table = list(time_table_DB['time'].iloc[index].split("+"))
+        _res_time_table = [f"{key+1}교시 : {value}" for key,
                            value in enumerate(_time_table)]
         answer = [f"[📆{set_grade}학년 {set_class}반 {date} 시간표입니다.]",
-                  (" ".join(_res_time_table)).replace(" ", "\n")]
+                  ("-".join(_res_time_table)).replace("-", "\n")]
     except:
         answer = ["오류!", ERROR_MESSAGE["Error:404"]]
 
@@ -103,22 +105,30 @@ def time_table():
 def meal():
     req = request.get_json()
 
-    date = json.loads(req["action"]["detailParams"]["sys_date"]["value"])
+    date = json.loads(req["action"]["detailParams"]
+                      ["sys_date"]["value"])["dateTag"]
 
-    m = datetime.today().month
-    d = datetime.today().day
-    url = 'https://search.naver.com/search.naver?query=%EB%8B%A8%EA%B5%AD%EB%8C%80%ED%95%99%EA%B5%90%EC%82%AC%EB%B2%94%EB%8C%80%ED%95%99%EB%B6%80%EC%86%8D%EA%B3%A0%EB%93%B1%ED%95%99%EA%B5%90+%EA%B8%89%EC%8B%9D'
-    req = Request(url)
-    page = urlopen(req)
-    html = page.read()
-    soup = BeautifulSoup(html, 'html.parser')
+    try:
+        if date == "today":
+            YMD = datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d')
+            m = datetime.now(timezone('Asia/Seoul')).strftime('%m')
+            d = datetime.now(timezone('Asia/Seoul')).strftime('%d')
+        elif date == "tomorrow":
+            YMD = str(
+                int(datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d'))+1)
+            m = datetime.now(timezone('Asia/Seoul')).strftime('%m')
+            d = str(int(datetime.now(timezone('Asia/Seoul')).strftime('%d'))+1)
+        url = f"https://open.neis.go.kr/hub/mealServiceDietInfo?type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7010137&MLSV_YMD={YMD}"
+        res = requests.get(url)
+        data = json.loads(res.text)
 
-    isCorrectDate = soup.find("div", {"data-time-target": "true"}).find(
-        "li", {"class": "menu_info"}).findAll("strong")[0].text
-
-    answer = ["[🍚" + str(m) + "월 " + str(d) +
-              "일 중식입니다.]", soup.find("div", {"data-time-target": "true"}).find("li", {"class": "menu_info"}).findAll(
-        "ul")[0].text.replace(" ", "\n")] if isCorrectDate == f"{m}월 {d}일 [중식]" else ["오류!", ERROR_MESSAGE["Error:404"]]
+        try:
+            answer = ["[🍚" + m + "월 " + d + "일 중식입니다.]", data['mealServiceDietInfo']
+                      [1]['row'][0]['DDISH_NM'].replace("<br/>", "\n")]
+        except KeyError:
+            answer = ["오류!", ERROR_MESSAGE]
+    except UnboundLocalError:
+        answer = ["오류!", ERROR_MESSAGE]
 
     res = {
         "version": "2.0",
@@ -146,14 +156,9 @@ def weather():
     req = request.get_json()
 
     location = req["action"]["detailParams"]["sys_location"]["value"]
+    url = f'https://search.naver.com/search.naver?query={location}+날씨'
 
-    enc_loc = urllib.parse.quote(location + '+ 날씨')
-    el = str(enc_loc)
-    url = 'https://search.naver.com/search.naver?query=' + el
-
-    req = Request(url)
-    page = urlopen(req)
-    html = page.read()
+    html = requests.get(url).text
     soup = BeautifulSoup(html, 'html.parser')
 
     try:
@@ -213,9 +218,8 @@ def weather():
                   "\n❤내일 예상 오전 상태 : " + tomorrowMState3 +
                   "\n🌡내일 예상 오후 온도 : " + tomorrowAfter + "°C" +
                   "\n❤내일 예상 오후 상태 : " + tomorrowAState3]
-
     except:
-        answer = ["오류!", ERROR_MESSAGE["Error:404"]]
+        answer = ["오류!", ERROR_MESSAGE]
 
     res = {
         "version": "2.0",
