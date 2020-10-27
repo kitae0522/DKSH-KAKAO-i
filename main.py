@@ -78,7 +78,7 @@ def time_table():
         answer = [f"[📆{set_grade}학년 {set_class}반 {date} 시간표입니다.]",
                   ("-".join(_res_time_table)).replace("-", "\n")]
     except:
-        answer = ["오류!", ERROR_MESSAGE["Error:404"]]
+        answer = ["오류!", ERROR_MESSAGE]
 
     res = {
         "version": "2.0",
