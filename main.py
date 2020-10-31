@@ -70,15 +70,21 @@ def time_table():
     else:
         tmp = ERROR_MESSAGE
 
-    try:
-        index = 25*(int(set_grade)-1) + (int(set_class)-1)*5 + tmp - 1
-        _time_table = list(time_table_DB['time'].iloc[index].split("+"))
-        _res_time_table = [f"{key+1}교시 : {value}" for key,
-                           value in enumerate(_time_table)]
-        answer = [f"[📆{set_grade}학년 {set_class}반 {date} 시간표입니다.]",
-                  ("-".join(_res_time_table)).replace("-", "\n")]
-    except:
-        answer = ["오류!", ERROR_MESSAGE]
+    with open("DB/.log", "a", encoding="UTF8") as file:
+        try:
+            index = 25*(int(set_grade)-1) + (int(set_class)-1)*5 + tmp - 1
+            _time_table = list(time_table_DB['time'].iloc[index].split("+"))
+            _res_time_table = [f"{key+1}교시 : {value}" for key,
+                               value in enumerate(_time_table)]
+            answer = [f"[📆{set_grade}학년 {set_class}반 {date} 시간표입니다.]",
+                      ("-".join(_res_time_table)).replace("-", "\n")]
+            log = ("time_table", datetime.now(timezone('Asia/Seoul')
+                                ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 200)
+        except:
+            answer = ["오류!", ERROR_MESSAGE]
+            log = ("time_table", datetime.now(timezone('Asia/Seoul')
+                                ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 404)
+        file.write(f"{log}\n")
 
     res = {
         "version": "2.0",
@@ -108,27 +114,35 @@ def meal():
     date = json.loads(req["action"]["detailParams"]
                       ["sys_date"]["value"])["dateTag"]
 
-    try:
-        if date == "today":
-            YMD = datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d')
-            m = datetime.now(timezone('Asia/Seoul')).strftime('%m')
-            d = datetime.now(timezone('Asia/Seoul')).strftime('%d')
-        elif date == "tomorrow":
-            YMD = str(
-                int(datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d'))+1)
-            m = datetime.now(timezone('Asia/Seoul')).strftime('%m')
-            d = str(int(datetime.now(timezone('Asia/Seoul')).strftime('%d'))+1)
-        url = f"https://open.neis.go.kr/hub/mealServiceDietInfo?type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7010137&MLSV_YMD={YMD}"
-        res = requests.get(url)
-        data = json.loads(res.text)
-
+    with open("DB/.log", "a", encoding="UTF8") as file:
         try:
-            answer = ["[🍚" + m + "월 " + d + "일 중식입니다.]", data['mealServiceDietInfo']
-                      [1]['row'][0]['DDISH_NM'].replace("<br/>", "\n")]
-        except KeyError:
+            if date == "today":
+                YMD = datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d')
+                m = datetime.now(timezone('Asia/Seoul')).strftime('%m')
+                d = datetime.now(timezone('Asia/Seoul')).strftime('%d')
+            elif date == "tomorrow":
+                YMD = str(
+                    int(datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d'))+1)
+                m = datetime.now(timezone('Asia/Seoul')).strftime('%m')
+                d = str(int(datetime.now(timezone('Asia/Seoul')).strftime('%d'))+1)
+            url = f"https://open.neis.go.kr/hub/mealServiceDietInfo?type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7010137&MLSV_YMD={YMD}"
+            res = requests.get(url)
+            data = json.loads(res.text)
+            log = ("meal", datetime.now(timezone('Asia/Seoul')
+                                        ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 200)
+
+            try:
+                answer = ["[🍚" + m + "월 " + d + "일 중식입니다.]", data['mealServiceDietInfo']
+                          [1]['row'][0]['DDISH_NM'].replace("<br/>", "\n")]
+            except KeyError:
+                answer = ["오류!", ERROR_MESSAGE]
+                log = ("meal", datetime.now(timezone('Asia/Seoul')
+                                            ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 404)
+        except UnboundLocalError:
             answer = ["오류!", ERROR_MESSAGE]
-    except UnboundLocalError:
-        answer = ["오류!", ERROR_MESSAGE]
+            log = ("meal", datetime.now(timezone('Asia/Seoul')
+                                        ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 404)
+        file.write(f"{log}\n")
 
     res = {
         "version": "2.0",
@@ -161,7 +175,7 @@ def weather():
     html = requests.get(url).text
     soup = BeautifulSoup(html, 'html.parser')
 
-    try:
+    with open("DB/.log", "a", encoding="UTF8") as file:
         # 현재 온도
         NowTemp = soup.find('p', class_='info_temperature').find(
             'span', class_='todaytemp').text
@@ -218,8 +232,9 @@ def weather():
                   "\n❤내일 예상 오전 상태 : " + tomorrowMState3 +
                   "\n🌡내일 예상 오후 온도 : " + tomorrowAfter + "°C" +
                   "\n❤내일 예상 오후 상태 : " + tomorrowAState3]
-    except:
-        answer = ["오류!", ERROR_MESSAGE]
+        log = ("weather", datetime.now(timezone('Asia/Seoul')
+                                       ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 200)
+        file.write(f"{log}\n")
 
     res = {
         "version": "2.0",
