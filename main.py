@@ -8,7 +8,11 @@ import pandas as pd
 
 time_table_DB = pd.read_csv('time_table.csv')
 
-ERROR_MESSAGE = "🤦🏻‍♂️학교 또는 기상청에서 제공하는 데이터 정보가 없습니다. 나중에 다시 시도해주세요."  # no data
+ERROR_MESSAGE = "🤦🏻‍♂️학교 또는 기상청에서 제공하는 데이터 정보가 없습니다. 나중에 다시 시도해주세요."
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.99 Safari/537.36"
+}
 
 quickReplies = [
     {
@@ -30,6 +34,11 @@ quickReplies = [
         "messageText": "시간표 알려줘!",
         "action": "message",
         "label": "시간표 알려줘!"
+    },
+    {
+        "messageText": "내 백준 티어 알려줘!",
+        "action": "message",
+        "label": "내 백준 티어 알려줘!"
     },
     {
         "messageText": "현재 날씨가 궁금해!",
@@ -78,12 +87,18 @@ def time_table():
                                value in enumerate(_time_table)]
             answer = [f"[📆{set_grade}학년 {set_class}반 {date} 시간표입니다.]",
                       ("-".join(_res_time_table)).replace("-", "\n")]
-            log = ("time_table", datetime.now(timezone('Asia/Seoul')
-                                ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 200)
+            log = {
+                "use-skill": "time_table",
+                "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                "type": 200
+            }
         except:
             answer = ["오류!", ERROR_MESSAGE]
-            log = ("time_table", datetime.now(timezone('Asia/Seoul')
-                                ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 404)
+            log = {
+                "use-skill": "time_table",
+                "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                "type": 404
+            }
         file.write(f"{log}\n")
 
     res = {
@@ -128,20 +143,29 @@ def meal():
             url = f"https://open.neis.go.kr/hub/mealServiceDietInfo?type=json&ATPT_OFCDC_SC_CODE=B10&SD_SCHUL_CODE=7010137&MLSV_YMD={YMD}"
             res = requests.get(url)
             data = json.loads(res.text)
-            log = ("meal", datetime.now(timezone('Asia/Seoul')
-                                        ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 200)
+            log = {
+                "use-skill": "meal",
+                "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                "type": 200
+            }
 
             try:
                 answer = ["[🍚" + m + "월 " + d + "일 중식입니다.]", data['mealServiceDietInfo']
                           [1]['row'][0]['DDISH_NM'].replace("<br/>", "\n")]
             except KeyError:
                 answer = ["오류!", ERROR_MESSAGE]
-                log = ("meal", datetime.now(timezone('Asia/Seoul')
-                                            ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 404)
+                log = {
+                    "use-skill": "meal",
+                    "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                    "type": 404
+                }
         except UnboundLocalError:
             answer = ["오류!", ERROR_MESSAGE]
-            log = ("meal", datetime.now(timezone('Asia/Seoul')
-                                        ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 404)
+            log = {
+                "use-skill": "meal",
+                "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                "type": 404
+            }
         file.write(f"{log}\n")
 
     res = {
@@ -172,8 +196,8 @@ def weather():
     location = req["action"]["detailParams"]["sys_location"]["value"]
     url = f'https://search.naver.com/search.naver?query={location}+날씨'
 
-    html = requests.get(url).text
-    soup = BeautifulSoup(html, 'html.parser')
+    html = requests.get(url, headers=headers)
+    soup = BeautifulSoup(html.content, 'html.parser')
 
     with open("DB/.log", "a", encoding="UTF8") as file:
         # 현재 온도
@@ -232,8 +256,11 @@ def weather():
                   "\n❤내일 예상 오전 상태 : " + tomorrowMState3 +
                   "\n🌡내일 예상 오후 온도 : " + tomorrowAfter + "°C" +
                   "\n❤내일 예상 오후 상태 : " + tomorrowAState3]
-        log = ("weather", datetime.now(timezone('Asia/Seoul')
-                                       ).strftime('%y%m%d : %Hh %Mmin %Ssec'), 200)
+        log = {
+            "use-skill": "weather",
+            "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+            "type": 200
+        }
         file.write(f"{log}\n")
 
     res = {
@@ -246,6 +273,82 @@ def weather():
                         "description": answer[1],
                         "thumbnail": {
                             "imageUrl": "https://i.ibb.co/MN9pfMQ/image.png"
+                        }
+                    }
+                }
+            ],
+            "quickReplies": quickReplies
+        }
+    }
+
+    return jsonify(res)
+
+
+@ app.route('/boj', methods=['POST'])
+def boj():
+    req = request.get_json()
+
+    boj_name = req["action"]["detailParams"]["boj_name"]["value"]
+    url = [f'https://solved.ac/profile/{boj_name}',
+           f'https://www.acmicpc.net/user/{boj_name}']
+
+    data_set = {}
+    answer, cnt = True, 0
+    for i in range(len(url)):
+        html = requests.get(url[i], headers=headers)
+        soup = BeautifulSoup(html.content, 'html.parser')
+        if i == 0:
+            arr = ["bronze", "silver", "gold",
+                   "platinum", "diamond", "ruby"]
+            try:
+                div = soup.find("div", {"class": "solvedac-centering"})
+                for i in arr:
+                    try:
+                        data_set["grade"] = div.find(
+                            "span", {"class": i}).find("b").text
+                    except AttributeError:
+                        continue
+            except AttributeError:
+                answer = False
+        elif i == 1:
+            try:
+                li = soup.find(
+                    "div", {"class": "panel-body"}).findAll("span")
+                for j in range(len(li)):
+                    if j % 2 == 0:
+                        cnt += 1
+                    data_set["solve_count"] = cnt
+            except AttributeError:
+                answer = False
+    with open("DB/.log", "a", encoding="UTF8") as file:
+        if answer:
+            answer = [f"[🌈{boj_name} 유저의 백준 정보입니다!]",
+                      f'티어 : {data_set["grade"]}\n푼 문제 갯수 : {data_set["solve_count"]}']
+            log = {
+                "use-skill": "boj",
+                "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                "type": 200
+            }
+        else:
+            answer = [f"[🌈{boj_name} 유저는 존재하지 않습니다!]",
+                      f'백준 사이트 회원인데 이 메세지가 뜬 다면, 오류가 발생했다고 알려주세요!']
+            log = {
+                "use-skill": "boj",
+                "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
+                "type": 404
+            }
+        file.write(f"{log}\n")
+
+    res = {
+        "version": "2.0",
+        "template": {
+            "outputs": [
+                {
+                    "basicCard": {
+                        "title": answer[0],
+                        "description": answer[1],
+                        "thumbnail": {
+                            "imageUrl": "https://i.ibb.co/Zd1ycf7/bojTier.png"
                         }
                     }
                 }
