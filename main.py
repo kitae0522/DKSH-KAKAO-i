@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from pytz import timezone
 import pandas as pd
+import random
 
 time_table_DB = pd.read_csv('time_table.csv')
 
@@ -293,45 +294,49 @@ def boj():
            f'https://www.acmicpc.net/user/{boj_name}']
 
     data_set = {}
-    answer, cnt = True, 0
+    baekjoon, cnt = True, 0
+    word = [["복잡성을 통제하는 것이 컴퓨터 프로그래밍의 기초다.", "- Brian Kernighan, 유닉스 창시자"],
+            ["컴퓨터는 쓸모가 없다. 그것은 그냥 대답만 할 수 있다.", "- Pablo Picasso, 화가"],
+            ["컴퓨터 언어를 설계하는 것은 공원을 산책하는 것과 같다. '쥬라기 공원!!!'",
+                "- Larry Wall, Perl 언어 창시자"],
+            ["만일 디버깅이 벌레를 잡는 과정이라면 프로그래밍은 그걸 집어넣는 과정이다.",
+             "- E.W Dijkstra, 컴퓨터 과학자(다익스트라 알고리즘 고안)"],
+            ["제발 안 쉬운 걸 쉽다고 이야기하지 마세요.", "- Alan Cooper, 비주얼 베이직의 아버지"]]
+    cnt = 0
     for i in range(len(url)):
         html = requests.get(url[i], headers=headers)
         soup = BeautifulSoup(html.content, 'html.parser')
         if i == 0:
             arr = ["bronze", "silver", "gold",
                    "platinum", "diamond", "ruby"]
-            try:
-                div = soup.find("div", {"class": "solvedac-centering"})
-                for i in arr:
-                    try:
-                        data_set["grade"] = div.find(
-                            "span", {"class": i}).find("b").text
-                    except AttributeError:
-                        continue
-            except AttributeError:
-                answer = False
+            div = soup.find("div", {"class": "solvedac-centering"})
+            for i in range(len(arr)):
+                try:
+                    data_set["grade"] = div.find(
+                        "span", {"class": arr[i]}).find("b").text
+                except AttributeError:
+                    continue
         elif i == 1:
             try:
                 li = soup.find(
                     "div", {"class": "panel-body"}).findAll("span")
-                for j in range(len(li)):
-                    if j % 2 == 0:
-                        cnt += 1
-                    data_set["solve_count"] = cnt
+                cnt = len(li) // 2
+                data_set["solve_count"] = cnt
             except AttributeError:
-                answer = False
+                baekjoon = False
+    ran_word = random.choice(word)
     with open("DB/.log", "a", encoding="UTF8") as file:
-        if answer:
-            answer = [f"[🌈{boj_name} 유저의 백준 정보입니다!]",
-                      f'티어 : {data_set["grade"]}\n푼 문제 갯수 : {data_set["solve_count"]}']
+        if div is not None and baekjoon:
+            answer = [f"[{boj_name} 유저의 백준 정보입니다!]",
+                      f'티어 : {data_set["grade"]}\n푼 문제 갯수 : {data_set["solve_count"]}\n\n{ran_word[0]}\n{ran_word[1]}']
             log = {
                 "use-skill": "boj",
                 "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
                 "type": 200
             }
         else:
-            answer = [f"[🌈{boj_name} 유저는 존재하지 않습니다!]",
-                      f'백준 사이트 회원인데 이 메세지가 뜬 다면, 오류가 발생했다고 알려주세요!']
+            answer = [f"[{boj_name} 유저는 존재하지 않습니다!]",
+                      f'백준 사이트 회원인데 이 메세지가 뜬 다면, https://www.acmicpc.net/setting/solved.ac 에서 설정해주세요!']
             log = {
                 "use-skill": "boj",
                 "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
