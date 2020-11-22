@@ -301,7 +301,9 @@ def boj():
                 "- Larry Wall, Perl 언어 창시자"],
             ["만일 디버깅이 벌레를 잡는 과정이라면 프로그래밍은 그걸 집어넣는 과정이다.",
              "- E.W Dijkstra, 컴퓨터 과학자(다익스트라 알고리즘 고안)"],
-            ["제발 안 쉬운 걸 쉽다고 이야기하지 마세요.", "- Alan Cooper, 비주얼 베이직의 아버지"]]
+            ["제발 안 쉬운 걸 쉽다고 이야기하지 마세요.", "- Alan Cooper, 비주얼 베이직의 아버지"],
+            ["640KB면 모든 사람들에게 충분하다.", "- Bill Gates, 마이크로소프트 창립자"]
+            ]
     cnt = 0
     for i in range(len(url)):
         html = requests.get(url[i], headers=headers)
