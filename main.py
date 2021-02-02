@@ -290,11 +290,9 @@ def boj():
     req = request.get_json()
 
     boj_name = req["action"]["detailParams"]["boj_name"]["value"]
-    url = [f'https://solved.ac/profile/{boj_name}',
-           f'https://www.acmicpc.net/user/{boj_name}']
-
-    data_set = {}
-    baekjoon, cnt = True, 0
+    
+    url = "https://api.solved.ac/v2/search/recommendations.json?query=" + boj_name
+    
     word = [["복잡성을 통제하는 것이 컴퓨터 프로그래밍의 기초다.", "- Brian Kernighan, 유닉스 창시자"],
             ["컴퓨터는 쓸모가 없다. 그것은 그냥 대답만 할 수 있다.", "- Pablo Picasso, 화가"],
             ["컴퓨터 언어를 설계하는 것은 공원을 산책하는 것과 같다. '쥬라기 공원!!!'",
@@ -304,33 +302,23 @@ def boj():
             ["제발 안 쉬운 걸 쉽다고 이야기하지 마세요.", "- Alan Cooper, 비주얼 베이직의 아버지"],
             ["640KB면 모든 사람들에게 충분하다.", "- Bill Gates, 마이크로소프트 창립자"]
             ]
-    cnt = 0
-    for i in range(len(url)):
-        html = requests.get(url[i], headers=headers)
-        soup = BeautifulSoup(html.content, 'html.parser')
-        if i == 0:
-            arr = ["bronze", "silver", "gold",
-                   "platinum", "diamond", "ruby"]
-            div = soup.find("div", {"class": "solvedac-centering"})
-            for i in range(len(arr)):
-                try:
-                    data_set["grade"] = div.find(
-                        "span", {"class": arr[i]}).find("b").text
-                except AttributeError:
-                    continue
-        elif i == 1:
-            try:
-                li = soup.find(
-                    "div", {"class": "panel-body"}).findAll("span")
-                cnt = len(li) // 2
-                data_set["solve_count"] = cnt
-            except AttributeError:
-                baekjoon = False
+
     ran_word = random.choice(word)
     with open("DB/.log", "a", encoding="UTF8") as file:
-        if div is not None and baekjoon:
+        
+        crawl_data = requests.get(url)
+        data = json.loads(crawl_data.text)
+
+        user_count = data["result"]["user_count"]
+        if user_count == 1:
+            solved = data["result"]["users"][0]["solved"]
+            level = data["result"]["users"][0]["level"]
+            rank = data["result"]["users"][0]["rank"]
+            tier = "Bronze" if level < 6 else "Silver" if level >= 6 and level < 11 else "Gold" if level >= 11 and level < 16 else "Platinum" if level >= 16 and level < 21 else "Diamond" if level >= 21 and level < 26 else "Ruby" if level >= 26 else None
+            level = 6 - (level % 5 if level % 5 else 1)
+
             answer = [f"[{boj_name} 유저의 백준 정보입니다!]",
-                      f'티어 : {data_set["grade"]}\n푼 문제 갯수 : {data_set["solve_count"]}\n\n{ran_word[0]}\n{ran_word[1]}']
+                      f"티어 : {tier} {level}\n푼 문제 갯수 : {solved}\n\n{ran_word[0]}\n{ran_word[1]}"]
             log = {
                 "use-skill": "boj",
                 "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
@@ -338,7 +326,7 @@ def boj():
             }
         else:
             answer = [f"[{boj_name} 유저는 존재하지 않습니다!]",
-                      f'백준 사이트 회원인데 이 메세지가 뜬 다면, https://www.acmicpc.net/setting/solved.ac 에서 설정해주세요!']
+                      f"백준 사이트 회원인데 이 메세지가 뜬 다면, https://www.acmicpc.net/setting/solved.ac 에서 설정해주세요!"]
             log = {
                 "use-skill": "boj",
                 "time": datetime.now(timezone('Asia/Seoul')).strftime('%y%m%d : %Hh %Mmin %Ssec'),
