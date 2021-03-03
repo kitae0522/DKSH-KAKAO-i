@@ -62,13 +62,16 @@
 <img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg">
 </div>
 
-# 5. 개발 환경
+# 5. 패치노트 (2021년도부터 작성)
+2021-03-02 / 00:06 : 날씨 검색 기능 삭제 (삭제 사유 : 사용 빈도수 매우 낮음)
+
+# 6. 개발 환경
 - Lang : Python 3.6
 - Web Framework : flask
 - IDE/CodeEditor : Visual Studio Code
 - Server : goormIDE (After a while we create a web server in Raspberry Pi.)
 
-# 6. 이것을 어떻게 사용하나요?
+# 7. 이것을 어떻게 사용하나요?
 - Development >
 ```shell
 $ git clone https://github.com/kitae0522/DKSH-KAKAO-i.git
@@ -80,7 +83,7 @@ $ python3 main.py
   - 카카오톡 채널 아이디 : @dkshlife
   - 카카오톡 채널 링크 : [https://pf.kakao.com/_VvPXxb](https://pf.kakao.com/_VvPXxb)
 
-# 7. 개발자 정보
+# 8. 개발자 정보
 
 - 개발자 : [@kitae0522](https://github.com/kitae0522)
 - 피드백 : kitae040522@gmail.com or leave an issue
