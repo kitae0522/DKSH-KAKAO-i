@@ -5,8 +5,9 @@ from datetime import datetime
 from pytz import timezone
 import pandas as pd
 import random
+import os
 
-time_table_DB = pd.read_csv('/home/kitae0522/mysite/time_table.csv')
+time_table_DB = pd.read_csv(f'{os.getcwd()}/time_table.csv')
 
 ERROR_MESSAGE = "🤦🏻‍♂️학교 또는 기상청에서 제공하는 데이터 정보가 없습니다. 나중에 다시 시도해주세요."
 
