@@ -51,26 +51,28 @@
 # 3. 메인 기능
 | # | Func Name | what it does | `keyword` | using example | Entity Name |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | 오늘 급식 파싱 | 나이스에서 급식정보를 파싱하여 리턴합니다. | `오늘` | `오늘 급식 알려줘`, `오늘 급식` ... | `sys_date` |
-| 2 | 시간표 | 전학급의 시간표 정보를 리턴합니다. | `1학년`, `2학년`, `1반`, `2반`, `월요일` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/time_table_success.jpg) | `sys_date`, `set_grade`, `set_class` |
-| 3 | 날씨 파싱 | 원하는 지역의 날씨 정보를 리턴합니다. | `대치동`, `성동구`, `서울` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg) | `sys_location` |
+| 1 | 오늘 급식 파싱 | 나이스에서 오늘 급식정보를 파싱하여 리턴합니다. | `오늘` | `오늘 급식 알려줘`, `오늘 급식` ... | `sys_date` |
+| 2 | 내일 급식 파싱 | 나이스에서 내일 급식정보를 파싱하여 리턴합니다. | `내일` | `내일 급식 알려줘`, `내일 급식` ... | `sys_date` |
+| 3 | 시간표 | 전학급의 시간표 정보를 리턴합니다. | `1학년`, `2학년`, `1반`, `2반`, `월요일` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/time_table_success.jpg) | `sys_date`, `set_grade`, `set_class` |
+| 4 | 날씨 파싱 | 원하는 지역의 날씨 정보를 리턴합니다. | `대치동`, `성동구`, `서울` ... | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg) | `sys_location` |
+| 5 | Solved.ac 프로필 확인 | 자신의 백준 티어를 파싱하여 리턴합니다. | `(자신의 백준 아이디)` | [look sample image](https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/solved_success.jpg) | `boj_name` |
 
 # 4. 실제 사용 예시
 <div align="center">
 <img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/meal_success.jpg">
 <img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/time_table_success.jpg">
 <img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/weather_success.jpg">
+<img src="https://github.com/kitae0522/DKSH-KAKAO-i/blob/main/sample/solved_success.jpg">
 </div>
 
 # 5. 패치노트 (2021년도부터 작성)
-- 2021-03-02 / 00:06 : 날씨 검색 기능 삭제 (삭제 사유 : 사용 빈도수 매우 낮음)
-- 2021-03-30 / 13:56 : 2021학년도 1학기 시간표 업데이트
+2021-03-02 / 00:06 : 날씨 검색 기능 삭제 (삭제 사유 : 사용 빈도수 매우 낮음)
+2021-05-03 / 20:01 : 2021학년도 1학기 시간표로 교체 및 MySQL 연동
 
 # 6. 개발 환경
-- Lang : Python 3.6
+- Lang : Python 3.7.7
 - Web Framework : flask
-- IDE/CodeEditor : Visual Studio Code
-- Server : goormIDE (After a while we create a web server in Raspberry Pi.)
+- Server : pythonanywhere
 
 # 7. 이것을 어떻게 사용하나요?
 - Development >
