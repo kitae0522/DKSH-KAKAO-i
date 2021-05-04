@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_restx import Resource, Api
 from datetime import datetime
 from pytz import timezone
 import requests
@@ -53,12 +54,12 @@ def dbconn() -> None:
 			charset="utf8"
 		)
 
-def select_time_table(id : int) -> list:
+def db_query(q : str) -> list:
 	ret = []
 	try:
 		db = dbconn()
 		c = db.cursor()
-		c.execute(f"select * from time_table where id={id}")
+		c.execute(q)
 		ret = c.fetchall()
 	except Exception as e:
 		print(f"db error : {e}")
@@ -66,12 +67,59 @@ def select_time_table(id : int) -> list:
 		return ret
 
 app = Flask(__name__)
+api = Api(app)
 
+@api.route('/API/')
+class ALL(Resource):
+    def get(self) -> dict:
+        time_table_db : list = list(db_query(f"select * from time_table"))
+        return_dict = {}
+        for i in range(len(time_table_db)):
+            return_dict[i] = {
+                "id" : time_table_db[i][0],
+                "grade" : time_table_db[i][1],
+                "class" : time_table_db[i][2],
+                "_day" : time_table_db[i][3],
+                "_0" : time_table_db[i][4],
+                "_1" : time_table_db[i][5],
+                "_2" : time_table_db[i][6],
+                "_3" : time_table_db[i][7],
+                "_4" : time_table_db[i][8],
+                "_5" : time_table_db[i][9],
+                "_6" : time_table_db[i][10]
+            }
+        res = {
+            "success" : True,
+            "len" : len(time_table_db),
+            "data" : return_dict
+        }
+        return res
 
-@app.route('/')
-def hello():
-    return "Hello, Flask!"
-
+@api.route('/API/<string:day>')
+class Day(Resource):
+    def get(self, day: str) -> dict:
+        time_table_db : list = list(db_query(f"select * from time_table where _day='{day}'"))
+        return_dict = {}
+        for i in range(len(time_table_db)):
+            return_dict[i] = {
+                "id" : time_table_db[i][0],
+                "grade" : time_table_db[i][1],
+                "class" : time_table_db[i][2],
+                "_day" : time_table_db[i][3],
+                "_0" : time_table_db[i][4],
+                "_1" : time_table_db[i][5],
+                "_2" : time_table_db[i][6],
+                "_3" : time_table_db[i][7],
+                "_4" : time_table_db[i][8],
+                "_5" : time_table_db[i][9],
+                "_6" : time_table_db[i][10]
+            }
+        res = {
+            "success" : True,
+            "len" : len(time_table_db),
+            "data" : return_dict
+        }
+        return res
 
 @app.route('/time_table', methods=['POST'])
 def time_table():
@@ -91,7 +139,7 @@ def time_table():
 
     try:
         index : int = 25*(int(set_grade)-1) + (int(set_class)-1)*5 + date_dict[date][1] - 1
-        time_table_db : list = list(select_time_table(index)[0])
+        time_table_db : list = list(db_query(f"select * from time_table where id={index}")[0])
         period : int = 1
         res_time_table : list = []
         for key, value in enumerate(time_table_db):
